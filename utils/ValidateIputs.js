@@ -1,9 +1,9 @@
 const { Validator } = require("node-input-validator");
 
 const coughServiceInputs = {
-  coughUrl: "required|url",
-  breathUrl: "required|url",
-  vowelUrl: "required|url",
+  vowelFile: "required|mime:wav,mp3",
+  coughFile: "required|mime:wav,mp3",
+  breathFile: "required|mime:wav,mp3",
 };
 
 export const validateInputs = async (inputs) => {
