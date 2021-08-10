@@ -82,7 +82,7 @@ app.post("/coviddetection", async (req, res) => {
     try {
       if (tokenCreationInProgress) await waitForTokenCreation();
       if (shouldCreateNewToken) await createConcurrencyToken();
-      await invokeAiService();
+      return await invokeAiService();
     } catch (error) {
       let errorMessage = error.message.toLowerCase();
       if (
