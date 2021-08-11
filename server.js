@@ -2,6 +2,8 @@ import express from "express";
 import aiService, { getServiceClient } from "./aiService";
 import { generateId } from "./utils/RandomId";
 import { validateInputs } from "./utils/ValidateIputs";
+import { uploadFile } from "./utils/FileUploader";
+import fileUpload from "express-fileupload";
 
 let localConcurrencyToken = "";
 let localChannelId = "";
@@ -18,6 +20,7 @@ const port = 8077;
 const status = { SUCCESS: "SUCCESS", FAILURE: "FAILURE" };
 
 app.use(express.json());
+app.use(fileUpload({ safeFileNames: true }));
 
 app.listen(port, () => {
   console.log(`Covid detection service listening at http://localhost:${port}`);
@@ -78,11 +81,16 @@ app.post("/coviddetection", async (req, res) => {
     }
   };
 
+  const getFileContent = ({ data, name }) => {
+    const fileContent = Buffer.from(data, "binary");
+    return { fileContent, name };
+  };
+
   const run = async (shouldCreateNewToken = false) => {
     try {
       if (tokenCreationInProgress) await waitForTokenCreation();
       if (shouldCreateNewToken) await createConcurrencyToken();
-      await invokeAiService();
+      return await invokeAiService();
     } catch (error) {
       let errorMessage = error.message.toLowerCase();
       if (
@@ -104,17 +112,41 @@ app.post("/coviddetection", async (req, res) => {
       }
     }
   };
+
+  async function uploadFiles(req) {
+    const folderName = generateId();
+    const fileUploadPath = `public/COUGH_TEST_${folderName}`;
+
+    const vowelFile = getFileContent(req.files.vowelFile);
+    const coughFile = getFileContent(req.files.coughFile);
+    const breathFile = getFileContent(req.files.breathFile);
+
+    vowelSoundUrl = await uploadFile(
+      fileUploadPath,
+      vowelFile.name,
+      vowelFile.fileContent
+    );
+
+    coughUrl = await uploadFile(
+      fileUploadPath,
+      coughFile.name,
+      coughFile.fileContent
+    );
+
+    breathUrl = await uploadFile(
+      fileUploadPath,
+      breathFile.name,
+      breathFile.fileContent
+    );
+  }
+
   try {
-    const inputs = await validateInputs(req.body);
+    await validateInputs(req.files);
+    await uploadFiles(req);
+    const data = await run(!Boolean(localConcurrencyToken));
 
-    coughUrl = inputs.coughUrl;
-    breathUrl = inputs.breathUrl;
-    vowelSoundUrl = inputs.vowelUrl;
-
-    const result = await run(!Boolean(localConcurrencyToken));
-
-    res.status(200).json({ data: result, status: status.SUCCESS });
+    res.status(200).json({ data, status: status.SUCCESS });
   } catch (error) {
-    res.status(500).json({ error: error.toString(), status: status.FAILURE });
+    res.status(400).json({ error: error.toString(), status: status.FAILURE });
   }
 });

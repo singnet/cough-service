@@ -63,11 +63,6 @@ const exampleService = async (
       serviceClient = await getServiceClient();
     }
 
-    console.log(breathUrl, "breathUrl");
-    console.log(vowelSoundUrl, "vowelSoundUrl");
-    console.log(userId, "userId");
-    console.log(submissionId, "submissionId");
-
     const request = new messages.Audio();
 
     request.setCoughUrl(coughUrl);
