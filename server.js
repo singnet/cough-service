@@ -20,7 +20,12 @@ const port = 8077;
 
 const status = { SUCCESS: "SUCCESS", FAILURE: "FAILURE" };
 
-app.use(cors());
+const corsOptions = {
+  origin: "https://example-service-a.singularitynet.io",
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(fileUpload({ safeFileNames: true }));
 
