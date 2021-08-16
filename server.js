@@ -4,6 +4,7 @@ import { generateId } from "./utils/RandomId";
 import { validateInputs } from "./utils/ValidateIputs";
 import { uploadFile } from "./utils/FileUploader";
 import fileUpload from "express-fileupload";
+const cors = require("cors");
 
 let localConcurrencyToken = "";
 let localChannelId = "";
@@ -19,6 +20,7 @@ const port = 8077;
 
 const status = { SUCCESS: "SUCCESS", FAILURE: "FAILURE" };
 
+app.use(cors());
 app.use(express.json());
 app.use(fileUpload({ safeFileNames: true }));
 
