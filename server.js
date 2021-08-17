@@ -5,6 +5,7 @@ import { validateInputs } from "./utils/ValidateIputs";
 import { uploadFile } from "./utils/FileUploader";
 import fileUpload from "express-fileupload";
 const cors = require("cors");
+const https = require("https");
 
 let localConcurrencyToken = "";
 let localChannelId = "";
@@ -24,6 +25,12 @@ const corsOptions = {
   origin: "https://example-service-a.singularitynet.io",
   optionsSuccessStatus: 200,
 };
+
+if (process.env.NODE_EXTRA_CA_CERTS) {
+  https.globalAgent.options.ca = [
+    fs.readFileSync(process.env.NODE_EXTRA_CA_CERTS),
+  ];
+}
 
 app.use(cors(corsOptions));
 app.use(express.json());
